@@ -294,4 +294,4 @@ if __name__ == "__main__":
     powell_results = compare_optimization_methods()
     print("\n" + "=" * 80)
     print("COMPARISON COMPLETE")
-    print("=" * 80)'''
+    print("=" * 80)
