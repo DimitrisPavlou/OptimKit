@@ -78,7 +78,8 @@ pip install -r requirements.txt
 
 ```python
 import sympy as sp
-from Function import Function
+from optimkit.function import Function
+from optimkit.opt1d import bisection, diff_bisection, fibonacci, golden_sector
 
 # Create a symbolic function
 x = sp.Symbol('x')
@@ -104,8 +105,8 @@ print("Approximate minimum (golden_sector):", (a4 + b4) / 2)
 
 ```python
 import sympy as sp
-from Function import Function
-from optNd import steepest_descent, newton_method, levenberg_marquardt
+from optimkit.function import Function
+from optimkit.optNd import steepest_descent, newton_method, levenberg_marquardt
 
 # Create a multivariate function
 x, y = sp.symbols('x y')
