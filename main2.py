@@ -1,3 +1,9 @@
+"""
+Comprehensive comparison of optimization methods on benchmark functions.
+
+This script compares gradient based/free methods (bisection, differential bisection, fibonacci, golden sector) on different functions to test their capability.
+"""
+
 import numpy as np
 import sympy as sp
 from optimkit.function.Function import Function
