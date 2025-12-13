@@ -77,21 +77,25 @@ pip install -r requirements.txt
 ### 1️⃣ One-dimensional optimization
 
 ```python
-from sympy import symbols
-from optimkit.opt1d import bisection
+import sympy as sp
+from Function import Function
 
-x = symbols('x')
-f = (x - 2)**2
+# Create a symbolic function
+x = sp.Symbol('x')
+f_sym = x**2 - 4*x + 4
+f = Function(f_sym, "symbolic", 1)
 
-low, high, ops = bisection(
-    f=f,
-    alpha=-5,
-    beta=5,
-    length_tol=1e-3,
-    epsilon=1e-4
-)
+# Use with any method
+a1, b1, ops = bisection(f, 0, 5, 1e-5, 1e-6)
+a2, b2, ops = diff_bisection(f, 0, 5, 1e-5)
+a3, b3, ops = fibonacci(f, 0, 5, 1e-5, 1e-6)
+a4, b4, ops = golden_sector(f, 0, 5, 1e-5)
 
-print("Approximate minimum:", (low[-1] + high[-1]) / 2)
+print("Approximate minimum (biscetion):", (a1 + b1) / 2)
+print("Approximate minimum (differential bisection):", (a2 + b2) / 2)
+print("Approximate minimum (fibonacci):", (a3 + b3) / 2)
+print("Approximate minimum (golden_sector):", (a4 + b4) / 2)
+
 ```
 
 ---
@@ -100,23 +104,22 @@ print("Approximate minimum:", (low[-1] + high[-1]) / 2)
 
 ```python
 import sympy as sp
-import numpy as np
-from optimkit.optNd import steepest_descent
+from Function import Function
+from optNd import steepest_descent, newton_method, levenberg_marquardt
 
+# Create a multivariate function
 x, y = sp.symbols('x y')
-f = x**5 * sp.exp(-x**2 - y**2)
+f_sym = x**2 + y**2 - 2*x - 4*y + 5
+f = Function(f_sym, "symbolic", 2)
 
-x_min, N, grad_norm, f_vals = steepest_descent(
-    f=f,
-    epsilon=1e-4,
-    starting_point=np.array([-1.0, 1.0]),
-    gamma_selection="constant",
-    gamma=0.45,
-    alpha=None,
-    beta=None
-)
+# Use any method
+x_min1, iters, grads, vals = steepest_descent(f, [0, 0], epsilon=1e-6)
+x_min2, iters, grads, vals = newton_method(f, [0, 0], epsilon=1e-6)
+x_min3, iters, grads, vals = levenberg_marquardt(f, [0, 0], epsilon=1e-6)
 
-print("Minimum found at:", x_min[-1])
+print("Minimum found at:", x_min1[-1])
+print("Minimum found at:", x_min2[-1])
+print("Minimum found at:", x_min3[-1])
 ```
 
 ---
