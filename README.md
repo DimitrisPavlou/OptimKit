@@ -100,7 +100,7 @@ print("Approximate minimum (golden_sector):", (a4[-1] + b4[-1]) / 2)
 
 ---
 
-### 2️⃣ Multivariable optimization (Steepest Descent)
+### 2️⃣ Multivariable optimization (Steepest Descent, Newton Method, Levenberg Marquardt Method)
 
 ```python
 import sympy as sp
