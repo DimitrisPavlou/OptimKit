@@ -3,7 +3,7 @@ Comprehensive comparison of optimization methods on benchmark functions.
 
 This script compares gradient-based methods (Steepest Descent, Newton, 
 Levenberg-Marquardt), genetic algorithms, and Grey Wolf Optimizer on 
-the Powell and Rosenbrock (Banana) functions.
+the Powell function. The goal is to showcase the ND and genetic/metaheuristic algorithms. 
 """
 
 import sympy as sp
