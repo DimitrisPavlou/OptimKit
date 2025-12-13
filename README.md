@@ -92,11 +92,10 @@ a2, b2, ops = diff_bisection(f, 0, 5, 1e-5)
 a3, b3, ops = fibonacci(f, 0, 5, 1e-5, 1e-6)
 a4, b4, ops = golden_sector(f, 0, 5, 1e-5)
 
-print("Approximate minimum (biscetion):", (a1 + b1) / 2)
-print("Approximate minimum (differential bisection):", (a2 + b2) / 2)
-print("Approximate minimum (fibonacci):", (a3 + b3) / 2)
-print("Approximate minimum (golden_sector):", (a4 + b4) / 2)
-
+print("Approximate minimum (biscetion):", (a1[-1] + b1[-1]) / 2)
+print("Approximate minimum (differential bisection):", (a2[-1] + b2[-1]) / 2)
+print("Approximate minimum (fibonacci):", (a3[-1] + b3[-1]) / 2)
+print("Approximate minimum (golden_sector):", (a4[-1] + b4[-1]) / 2)
 ```
 
 ---
