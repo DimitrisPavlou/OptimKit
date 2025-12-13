@@ -2,15 +2,15 @@ import numpy as np
 from .selection import tournament_selection , roulette_wheel_selection
 from .crossover import crossover
 from .mutation import mutation
-from typing import Callable, Tuple, Literal
+from typing import Callable, Tuple, Literal, Union, List
+from optimkit.function import Function
 
 ObjectiveFunction = Callable[[np.ndarray], float]
 SelectionMethod = Literal["tournament", "roulette"]
 
-
 def GA(
-    objective_function: ObjectiveFunction,
-    init_point: np.ndarray,
+    objective_function: Union[ObjectiveFunction, Function],
+    init_point: Union[np.ndarray, List[float]],
     population_size: int = 100,
     max_generations: int = 100,
     p_crossover: float = 0.7,
@@ -23,8 +23,15 @@ def GA(
     """
     Genetic Algorithm for continuous optimization.
     
+    This is a derivative-free metaheuristic method that works directly with
+    function evaluations, making it suitable for complex, non-differentiable,
+    or black-box optimization problems.
+    
     Args:
-        objective_function: Function to minimize, takes array and returns float
+        objective_function: Either a raw callable that takes array and returns float,
+                          or a Function object (can be "numeric" or "symbolic" type).
+                          For metaheuristics, "numeric" Function objects are recommended
+                          when you don't need gradients but want API consistency.
         init_point: Initial point to center the population around
         population_size: Number of individuals in population (default: 100)
         max_generations: Maximum number of generations (default: 100)
@@ -43,6 +50,21 @@ def GA(
         
     Raises:
         ValueError: If invalid selection_algorithm specified
+        
+    Examples:
+        >>> # Option 1: Raw callable
+        >>> def sphere(x):
+        ...     return np.sum(x**2)
+        >>> best_sol, best_fit, curve = GA(
+        ...     sphere, init_point=[5, 5, 5], population_size=50
+        ... )
+        
+        >>> # Option 2: Function object (numeric)
+        >>> from Function import Function
+        >>> f = Function(sphere, "numeric", 3)
+        >>> best_sol, best_fit, curve = GA(
+        ...     f, init_point=[5, 5, 5], population_size=50
+        ... )
     """
     # Validate inputs
     if selection_algorithm not in ["tournament", "roulette"]:
@@ -113,5 +135,12 @@ def GA(
                 f"Best Fitness: {best_fitness:.6e} | "
                 f"Best Solution: {best_solution}"
             )
+    
+    # Final report
+    print(
+        f"\nOptimization Complete!\n"
+        f"Best Fitness: {best_fitness:.6e}\n"
+        f"Best Solution: {best_solution}"
+    )
     
     return best_solution, best_fitness, convergence_curve

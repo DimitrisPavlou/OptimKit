@@ -58,11 +58,13 @@ __author__ = "Your Name"
 from . import opt1d
 from . import optNd
 from . import genetic_opt
+from . import function
 
 __all__ = [
     "opt1d",
     "optNd", 
     "genetic_opt",
+    "function",
 ]
 
 

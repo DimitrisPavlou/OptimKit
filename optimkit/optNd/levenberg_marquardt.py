@@ -3,11 +3,13 @@ from sympy import Expr, lambdify, Matrix, hessian
 from typing import Callable, Union, Tuple, List
 from scipy.linalg import eigh
 from .helper_utils import optimal_line_search, armijo_line_search
+from optimkit.function.Function import Function
+
 
 NumericFunction = Callable[[np.ndarray], float]
 
 def levenberg_marquardt(
-    f: Expr,
+    f: Function,
     starting_point: Union[np.ndarray, List[float]],
     epsilon: float = 1e-6,
     gamma_selection: str = "armijo",
@@ -24,7 +26,7 @@ def levenberg_marquardt(
     the maximum eigenvalue of Hk.
     
     Args:
-        f: Symbolic expression of objective function (SymPy Expr)
+        f: Function object (must be multivariate, n_vars > 1, symbolic type)
         starting_point: Initial point for optimization
         epsilon: Convergence tolerance for gradient norm (default: 1e-6)
         gamma_selection: Step size selection method - "armijo", "optimal_line_search", 
@@ -44,26 +46,24 @@ def levenberg_marquardt(
     Raises:
         ValueError: If invalid gamma_selection method or missing required parameters
     """
-    # Extract variables and create numeric functions
-    vars_list = sorted(f.free_symbols, key=str)
-    f_numeric = lambdify(vars_list, f, "numpy")
-    
-    # Compute gradient and Hessian symbolically
-    grad_expr = Matrix([f]).jacobian(vars_list)
-    hessian_expr = hessian(f, vars_list)
-    
-    grad_f_numeric = lambdify(vars_list, grad_expr, "numpy")
-    hessian_f_numeric = lambdify(vars_list, hessian_expr, "numpy")
+    # Validate function type
+    if f.n_vars < 2:
+        raise ValueError("Levenberg-Marquardt requires a multivariate function (n_vars >= 2)")
+    if f.func_type != "symbolic":
+        raise ValueError("Levenberg-Marquardt requires a symbolic function")
     
     # Initialize
     xk = np.array(starting_point, dtype=float).flatten()
     n_vars = len(xk)
     
+    if n_vars != f.n_vars:
+        raise ValueError(f"Starting point dimension ({n_vars}) must match function variables ({f.n_vars})")
+    
     # Storage for trajectory
     trajectory = [xk.copy()]
-    grad = np.array(grad_f_numeric(*xk), dtype=float).flatten()
+    grad = f.grad(xk)
     grad_norms = [np.linalg.norm(grad)]
-    f_vals = [float(f_numeric(*xk))]
+    f_vals = [float(f(xk))]
     
     # Validate gamma_selection parameters
     interval: Tuple[float, float] = (0.0, 10.0)  # Default interval
@@ -88,7 +88,7 @@ def levenberg_marquardt(
     k = 0
     while grad_norms[-1] > epsilon and k < max_iter:
         # Compute Hessian at current point
-        Hk = np.array(hessian_f_numeric(*xk), dtype=float)
+        Hk = f.hessian(xk)
         
         # Find the maximum absolute eigenvalue of Hk
         eigenvalues = np.linalg.eigvals(Hk)
@@ -109,9 +109,9 @@ def levenberg_marquardt(
         
         # Step size selection
         if gamma_selection == "optimal_line_search":
-            gamma_k = optimal_line_search(f_numeric, xk, dk, interval)
+            gamma_k = optimal_line_search(f.f_numeric, xk, dk, interval)
         elif gamma_selection == "armijo":
-            gamma_k = armijo_line_search(f_numeric, xk, dk, grad, gamma, alpha, beta)
+            gamma_k = armijo_line_search(f.f_numeric, xk, dk, grad, gamma, alpha, beta)
         else:  # constant
             gamma_k = gamma
         
@@ -119,12 +119,12 @@ def levenberg_marquardt(
         xk = xk + gamma_k * dk
         
         # Compute new gradient
-        grad = np.array(grad_f_numeric(*xk), dtype=float).flatten()
+        grad = f.grad(xk)
         
         # Store results
         trajectory.append(xk.copy())
         grad_norms.append(np.linalg.norm(grad))
-        f_vals.append(float(f_numeric(*xk)))
+        f_vals.append(float(f(xk)))
         
         k += 1
     

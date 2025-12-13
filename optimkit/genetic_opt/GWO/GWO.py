@@ -12,13 +12,12 @@ Reference:
 
 import numpy as np
 from typing import Callable, Tuple, Union, List
-
+from optimkit.function import Function
 # Type alias
 ObjectiveFunction = Callable[[np.ndarray], float]
 
-
 def grey_wolf_optimizer(
-    objective_function: ObjectiveFunction,
+    objective_function: Union[ObjectiveFunction, Function],
     lb: Union[np.ndarray, List[float]],
     ub: Union[np.ndarray, List[float]],
     dim: int,
@@ -34,8 +33,14 @@ def grey_wolf_optimizer(
     delta) and updates the positions of search agents (omega wolves) based on 
     these leaders.
     
+    This is a derivative-free metaheuristic method that works directly with
+    function evaluations, making it suitable for black-box optimization problems.
+    
     Args:
-        objective_function: Function to minimize, takes array and returns float
+        objective_function: Either a raw callable that takes array and returns float,
+                          or a Function object (can be "numeric" or "symbolic" type).
+                          For metaheuristics, "numeric" Function objects are recommended
+                          when you don't need gradients but want API consistency.
         lb: Lower bounds for each dimension
         ub: Upper bounds for each dimension
         dim: Number of dimensions
@@ -51,6 +56,21 @@ def grey_wolf_optimizer(
         
     Raises:
         ValueError: If bounds dimensions don't match dim or lb >= ub
+        
+    Examples:
+        >>> # Option 1: Raw callable
+        >>> def rosenbrock(x):
+        ...     return 100*(x[1]-x[0]**2)**2 + (1-x[0])**2
+        >>> best_fit, best_pos, curve = grey_wolf_optimizer(
+        ...     rosenbrock, lb=[-5,-5], ub=[5,5], dim=2
+        ... )
+        
+        >>> # Option 2: Function object (numeric)
+        >>> from Function import Function
+        >>> f = Function(rosenbrock, "numeric", 2)
+        >>> best_fit, best_pos, curve = grey_wolf_optimizer(
+        ...     f, lb=[-5,-5], ub=[5,5], dim=2
+        ... )
     """
     # Input validation
     lb = np.array(lb) if not isinstance(lb, np.ndarray) else lb
@@ -167,4 +187,3 @@ def grey_wolf_optimizer(
     )
     
     return alpha_score, alpha_position, convergence_curve
-

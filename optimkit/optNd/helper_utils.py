@@ -1,6 +1,5 @@
 import numpy as np
-from sympy import Expr, lambdify, symbols, Matrix
-from typing import Callable, Union, Tuple, List
+from typing import Callable, Tuple
 
 NumericFunction = Callable[[np.ndarray], float]
 
@@ -50,7 +49,7 @@ def armijo_line_search(
     Armijo backtracking line search for step size determination.
     
     Args:
-        f_numeric: Objective function
+        f_numeric: Objective function (takes unpacked arguments: f_numeric(*x))
         xk: Current iterate
         dk: Search direction
         grad: Gradient at current iterate
@@ -83,7 +82,7 @@ def optimal_line_search(
     Optimal line search using golden-section search.
     
     Args:
-        f_numeric: Objective function
+        f_numeric: Objective function (takes unpacked arguments: f_numeric(*x))
         xk: Current iterate
         dk: Search direction
         interval: Search interval [a, b] (default: (0.0, 10.0))

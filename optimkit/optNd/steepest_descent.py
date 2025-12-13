@@ -1,12 +1,11 @@
 import numpy as np
-from sympy import Expr, lambdify, symbols, Matrix
-from typing import Callable, Union, Tuple, List
+from typing import Union, Tuple, List
 from .helper_utils import armijo_line_search, optimal_line_search
+from optimkit.function.Function import Function
 
-NumericFunction = Callable[[np.ndarray], float]
 
 def steepest_descent(
-    f: Expr,
+    f: Function,
     starting_point: Union[np.ndarray, List[float]],
     epsilon: float = 1e-6,
     gamma_selection: str = "armijo",
@@ -19,7 +18,7 @@ def steepest_descent(
     Steepest descent optimization algorithm for multivariable functions.
     
     Args:
-        f: Symbolic expression of objective function (SymPy Expr)
+        f: Function object (must be multivariate, n_vars > 1, symbolic type)
         starting_point: Initial point for optimization
         epsilon: Convergence tolerance for gradient norm (default: 1e-6)
         gamma_selection: Step size selection method - "armijo", "optimal_line_search", 
@@ -39,22 +38,24 @@ def steepest_descent(
     Raises:
         ValueError: If invalid gamma_selection method or missing required parameters
     """
-    # Extract variables and create numeric functions
-    # Sorting ensures consistent order when passing arguments to lambdified functions
-    vars_list = sorted(f.free_symbols, key=str)
-    f_numeric = lambdify(vars_list, f, "numpy")
-    grad_expr = Matrix([f]).jacobian(vars_list)
-    grad_f_numeric = lambdify(vars_list, grad_expr, "numpy")
+    # Validate function type
+    if f.n_vars < 2:
+        raise ValueError("Steepest descent requires a multivariate function (n_vars >= 2)")
+    if f.func_type != "symbolic":
+        raise ValueError("Steepest descent requires a symbolic function")
     
     # Initialize
     xk = np.array(starting_point, dtype=float).flatten()
     n_vars = len(xk)
     
+    if n_vars != f.n_vars:
+        raise ValueError(f"Starting point dimension ({n_vars}) must match function variables ({f.n_vars})")
+    
     # Storage for trajectory
     trajectory = [xk.copy()]
-    grad = np.array(grad_f_numeric(*xk), dtype=float).flatten()
+    grad = f.grad(xk)
     grad_norms = [np.linalg.norm(grad)]
-    f_vals = [float(f_numeric(*xk))]
+    f_vals = [float(f(xk))]
     
     # Validate gamma_selection parameters
     interval: Tuple[float, float] = (0.0, 10.0)  # Default interval
@@ -83,9 +84,9 @@ def steepest_descent(
         
         # Step size selection
         if gamma_selection == "optimal_line_search":
-            gamma_k = optimal_line_search(f_numeric, xk, dk, interval)
+            gamma_k = optimal_line_search(f.f_numeric, xk, dk, interval)
         elif gamma_selection == "armijo":
-            gamma_k = armijo_line_search(f_numeric, xk, dk, grad, gamma, alpha, beta)
+            gamma_k = armijo_line_search(f.f_numeric, xk, dk, grad, gamma, alpha, beta)
         else:  # constant
             gamma_k = gamma
         
@@ -93,12 +94,12 @@ def steepest_descent(
         xk = xk + gamma_k * dk
         
         # Compute new gradient
-        grad = np.array(grad_f_numeric(*xk), dtype=float).flatten()
-        
+        grad = f.grad(xk)
+
         # Store results
         trajectory.append(xk.copy())
         grad_norms.append(np.linalg.norm(grad))
-        f_vals.append(float(f_numeric(*xk)))
+        f_vals.append(float(f(xk)))
         
         k += 1
     
@@ -106,4 +107,3 @@ def steepest_descent(
     trajectory_array = np.array(trajectory)
     
     return trajectory_array, k, np.array(grad_norms), np.array(f_vals)
-

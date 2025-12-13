@@ -9,22 +9,11 @@ the Powell and Rosenbrock (Banana) functions.
 import sympy as sp
 import numpy as np
 from matplotlib import pyplot as plt
-
-# Import 1D optimization methods
-from optimkit.opt1d import golden_sector, fibonacci, bisection, diff_bisection
-
 # Import ND gradient-based methods
 from optimkit.optNd import newton_method, steepest_descent, levenberg_marquardt
-
 # Import genetic algorithms and metaheuristics
 from optimkit.genetic_opt import GA, grey_wolf_optimizer
-
-
-
-def rosenbrock(x: np.ndarray) -> float:
-    """Rosenbrock 2D function - a classic optimization test function."""
-    return 100 * (x[1] - x[0]**2)**2 + (1 - x[0])**2
-
+from optimkit.function import Function
 
 def powell(x: np.ndarray) -> float:
     """Powell function - a multimodal optimization test function."""
@@ -42,6 +31,8 @@ def compare_optimization_methods():
     # Define symbolic Powell function for gradient-based methods
     x1, x2, x3, x4 = sp.symbols('x1 x2 x3 x4')
     powell_sym = (x1 + 10*x2)**2 + 5*(x3 - x4)**2 + (x2 - 2*x3)**4 + 10*(x1 - x4)**4
+    F_powel_sym = Function(powell_sym, "symbolic", n_vars=4)
+    F_powel_num = Function(powell, "numeric", n_vars=4)
     
     # Starting point for all methods
     starting_point = np.array([3.0, -1.0, 0.0, 1.0])
@@ -58,7 +49,7 @@ def compare_optimization_methods():
     
     try:
         trajectory_sd, n_iter_sd, grad_norms_sd, f_vals_sd = steepest_descent(
-            f=powell_sym,
+            f=F_powel_sym,
             starting_point=starting_point,
             epsilon=1e-6,
             gamma_selection="armijo",
@@ -93,7 +84,7 @@ def compare_optimization_methods():
     
     try:
         trajectory_newton, n_iter_newton, grad_norms_newton, f_vals_newton = newton_method(
-            f=powell_sym,
+            f=F_powel_sym,
             starting_point=starting_point,
             epsilon=1e-6,
             gamma_selection="armijo",
@@ -128,7 +119,7 @@ def compare_optimization_methods():
     
     try:
         trajectory_lm, n_iter_lm, grad_norms_lm, f_vals_lm = levenberg_marquardt(
-            f=powell_sym,
+            f=F_powel_sym,
             starting_point=starting_point,
             epsilon=1e-6,
             gamma_selection="armijo",
@@ -163,7 +154,7 @@ def compare_optimization_methods():
     
     try:
         best_solution_ga, best_fitness_ga, convergence_ga = GA(
-            objective_function=powell,
+            objective_function=F_powel_num,
             init_point=starting_point,
             population_size=100,
             max_generations=500,
@@ -204,7 +195,7 @@ def compare_optimization_methods():
     
     try:
         best_fitness_gwo, best_position_gwo, convergence_gwo = grey_wolf_optimizer(
-            objective_function=powell,
+            objective_function=F_powel_num,
             lb=lb,
             ub=ub,
             dim=dim,
