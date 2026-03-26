@@ -101,10 +101,12 @@ pytest tests/ --cov=optimkit
 
 ```python
 from sympy import symbols
+from optimkit.function.Function import Function
 from optimkit.opt1d import bisection
 
 x = symbols('x')
-f = (x - 2)**2
+f_expr = (x - 2)**2
+f = Function(f_expr, "symbolic", n_vars=1)
 
 low, high, ops = bisection(
     f=f,
@@ -124,33 +126,85 @@ print("Approximate minimum:", (low[-1] + high[-1]) / 2)
 ```python
 import sympy as sp
 import numpy as np
+from optimkit.function.Function import Function
 from optimkit.optNd import steepest_descent
 
 x, y = sp.symbols('x y')
-f = x**5 * sp.exp(-x**2 - y**2)
+f_expr = x**5 * sp.exp(-x**2 - y**2)
+f = Function(f_expr, "symbolic", n_vars=2)
 
-x_min, N, grad_norm, f_vals = steepest_descent(
+trajectory, n_iter, grad_norms, f_vals = steepest_descent(
     f=f,
-    epsilon=1e-4,
     starting_point=np.array([-1.0, 1.0]),
+    epsilon=1e-4,
     gamma_selection="constant",
     gamma=0.45,
-    alpha=None,
-    beta=None
+    alpha=1e-4,
+    beta=0.5
 )
 
-print("Minimum found at:", x_min[-1])
+print("Minimum found at:", trajectory[-1])
 ```
 
 ---
 
-### 3️⃣ Step-size (γ) selection
+### 3️⃣ Genetic Algorithm
+
+```python
+import numpy as np
+from optimkit.genetic_opt.classicGA import GA
+
+def sphere(x):
+    return np.sum(x**2)
+
+best_sol, best_fit, convergence = GA(
+    objective_function=sphere,
+    init_point=[5.0, 5.0],
+    population_size=50,
+    max_generations=100,
+    p_crossover=0.7,
+    mutation_rate=0.01,
+    selection_algorithm="tournament",
+    num_elites=2
+)
+
+print("Best solution:", best_sol)
+print("Best fitness:", best_fit)
+```
+
+---
+
+### 4️⃣ Grey Wolf Optimizer
+
+```python
+import numpy as np
+from optimkit.genetic_opt.GWO.GWO import grey_wolf_optimizer
+
+def sphere(x):
+    return np.sum(x**2)
+
+best_fit, best_pos, convergence = grey_wolf_optimizer(
+    objective_function=sphere,
+    lb=[-10.0, -10.0],
+    ub=[10.0, 10.0],
+    dim=2,
+    num_agents=30,
+    max_iterations=100
+)
+
+print("Best position:", best_pos)
+print("Best fitness:", best_fit)
+```
+
+---
+
+### 5️⃣ Step-size (γ) selection
 
 Supported strategies for multivariable methods:
 
-* **Constant step size**
-* **Armijo backtracking rule**
-* **Optimal line search** (via line search on ( f(x_k + \gamma d_k) ))
+* **Constant step size**: `gamma_selection="constant"` (specify `gamma` parameter)
+* **Armijo backtracking rule**: `gamma_selection="armijo"` (uses `alpha` and `beta` parameters)
+* **Optimal line search**: `gamma_selection="optimal_line_search"` (uses golden-section search)
 
 ---
 
@@ -159,28 +213,40 @@ Supported strategies for multivariable methods:
 ```text
 optimkit/
 │
-├── opt1d/              # One-dimensional optimization algorithms
-│   ├── bisection.py
-│   ├── diff_bisection.py
-│   ├── fibonacci.py
-│   └── golden_sector.py
+├── optimkit/           # Main package
+│   ├── __init__.py
+│   ├── function/       # Function wrapper class (Symbolic/Numeric)
+│   │   └── Function.py
+│   ├── opt1d/          # One-dimensional optimization algorithms
+│   │   ├── bisection.py
+│   │   ├── diff_bisection.py
+│   │   ├── fibonacci.py
+│   │   └── golden_sector.py
+│   ├── optNd/          # Multivariable optimization algorithms
+│   │   ├── steepest_descent.py
+│   │   ├── newton.py
+│   │   ├── levenberg_marquardt.py
+│   │   └── helper_utils.py
+│   └── genetic_opt/    # Population-based optimization methods
+│       ├── classicGA/
+│       │   ├── GA.py
+│       │   ├── selection.py
+│       │   ├── crossover.py
+│       │   └── mutation.py
+│       └── GWO/
+│           └── GWO.py
 │
-├── optNd/              # Multivariable optimization algorithms
-│   ├── steepest_descent.py
-│   ├── newton.py
-│   ├── levenberg_marquardt.py
-│   └── helper_utils.py
-│
-├── genetic_opt/        # Population-based optimization methods
-│   ├── classicGA/
-│   │   ├── GA.py
-│   │   ├── selection.py
-│   │   ├── crossover.py
-│   │   └── mutation.py
-│   └── GWO/
-│       └── GWO.py
+├── tests/              # Test suite
+│   ├── __init__.py
+│   ├── test_function.py
+│   ├── test_genetic.py
+│   ├── test_gwo.py
+│   ├── test_opt1d.py
+│   └── test_optNd.py
 │
 ├── requirements.txt
+├── requirements-dev.txt
+├── pytest.ini
 └── README.md
 ```
 
@@ -191,12 +257,31 @@ optimkit/
 * Prefer **clarity over excessive abstraction**
 * Algorithms closely follow textbook formulations
 * Symbolic definitions first, numeric execution second
-* Minimal dependencies
+* Minimal dependencies (NumPy + SymPy)
+* Comprehensive test coverage
 * Suitable for:
 
   * academic projects
   * numerical optimization coursework
   * research prototypes
+  * learning optimization algorithms
+
+---
+
+## 🧪 Testing
+
+The test suite covers all major functionality:
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run tests with coverage
+pytest tests/ --cov=optimkit
+
+# Run specific test module
+pytest tests/test_function.py -v
+```
 
 ---
 
@@ -204,10 +289,24 @@ optimkit/
 
 Planned improvements:
 
-* Constraint handling techniques
+* Constraint handling techniques (penalty methods, barrier methods)
 * Quasi-Newton methods (BFGS, L-BFGS)
-* Additional metaheuristics
+* Additional metaheuristics (PSO, Differential Evolution)
+* Constrained optimization support
 * Documentation generation (Sphinx)
+* Performance benchmarks
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! To contribute:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/new-method`)
+3. Make your changes and add tests
+4. Run the test suite (`pytest tests/ -v`)
+5. Submit a pull request
 
 ---
 
