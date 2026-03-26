@@ -75,14 +75,20 @@ def grey_wolf_optimizer(
     # Input validation
     lb = np.array(lb) if not isinstance(lb, np.ndarray) else lb
     ub = np.array(ub) if not isinstance(ub, np.ndarray) else ub
-    
+
     if len(lb) != dim or len(ub) != dim:
         raise ValueError(
             f"Bounds dimensions ({len(lb)}, {len(ub)}) must match dim ({dim})"
         )
-    
+
     if np.any(lb >= ub):
         raise ValueError("Lower bounds must be strictly less than upper bounds")
+
+    if num_agents < 3:
+        raise ValueError(
+            f"num_agents ({num_agents}) must be at least 3 for GWO "
+            "(requires alpha, beta, and delta wolves)"
+        )
     
     # Initialize the positions of the three best wolves (alpha, beta, delta)
     alpha_position = np.zeros(dim)

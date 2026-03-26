@@ -51,6 +51,8 @@ Future versions may extend support to constrained optimization.
 
 ## 🔧 Installation
 
+### Option 1: Install from source (recommended)
+
 Clone the repository:
 
 ```bash
@@ -64,11 +66,32 @@ Install the dependencies:
 pip install -r requirements.txt
 ```
 
+### Option 2: Install with pip (future)
+
+```bash
+pip install optimkit
+```
+
 ### Requirements
 
 * Python ≥ 3.9
-* NumPy
-* SymPy
+* NumPy ≥ 1.20.0
+* SymPy ≥ 1.9.0
+
+### Optional: Development setup
+
+If you want to contribute or run the test suite:
+
+```bash
+# Install development dependencies
+pip install -r requirements-dev.txt
+
+# Run the test suite
+pytest tests/ -v
+
+# Run tests with coverage report
+pytest tests/ --cov=optimkit
+```
 
 ---
 
@@ -124,13 +147,13 @@ print("Minimum found at:", x_min3[-1])
 
 ---
 
-### 3️⃣ Step-size (γ) selection
+### 5️⃣ Step-size (γ) selection
 
 Supported strategies for multivariable methods:
 
-* **Constant step size**
-* **Armijo backtracking rule**
-* **Optimal line search** (via line search on ( f(x_k + \gamma d_k) ))
+* **Constant step size**: `gamma_selection="constant"` (specify `gamma` parameter)
+* **Armijo backtracking rule**: `gamma_selection="armijo"` (uses `alpha` and `beta` parameters)
+* **Optimal line search**: `gamma_selection="optimal_line_search"` (uses golden-section search)
 
 ---
 
@@ -139,28 +162,40 @@ Supported strategies for multivariable methods:
 ```text
 optimkit/
 │
-├── opt1d/              # One-dimensional optimization algorithms
-│   ├── bisection.py
-│   ├── diff_bisection.py
-│   ├── fibonacci.py
-│   └── golden_sector.py
+├── optimkit/           # Main package
+│   ├── __init__.py
+│   ├── function/       # Function wrapper class (Symbolic/Numeric)
+│   │   └── Function.py
+│   ├── opt1d/          # One-dimensional optimization algorithms
+│   │   ├── bisection.py
+│   │   ├── diff_bisection.py
+│   │   ├── fibonacci.py
+│   │   └── golden_sector.py
+│   ├── optNd/          # Multivariable optimization algorithms
+│   │   ├── steepest_descent.py
+│   │   ├── newton.py
+│   │   ├── levenberg_marquardt.py
+│   │   └── helper_utils.py
+│   └── genetic_opt/    # Population-based optimization methods
+│       ├── classicGA/
+│       │   ├── GA.py
+│       │   ├── selection.py
+│       │   ├── crossover.py
+│       │   └── mutation.py
+│       └── GWO/
+│           └── GWO.py
 │
-├── optNd/              # Multivariable optimization algorithms
-│   ├── steepest_descent.py
-│   ├── newton.py
-│   ├── levenberg_marquardt.py
-│   └── helper_utils.py
-│
-├── genetic_opt/        # Population-based optimization methods
-│   ├── classicGA/
-│   │   ├── GA.py
-│   │   ├── selection.py
-│   │   ├── crossover.py
-│   │   └── mutation.py
-│   └── GWO/
-│       └── GWO.py
+├── tests/              # Test suite
+│   ├── __init__.py
+│   ├── test_function.py
+│   ├── test_genetic.py
+│   ├── test_gwo.py
+│   ├── test_opt1d.py
+│   └── test_optNd.py
 │
 ├── requirements.txt
+├── requirements-dev.txt
+├── pytest.ini
 └── README.md
 ```
 
@@ -171,12 +206,31 @@ optimkit/
 * Prefer **clarity over excessive abstraction**
 * Algorithms closely follow textbook formulations
 * Symbolic definitions first, numeric execution second
-* Minimal dependencies
+* Minimal dependencies (NumPy + SymPy)
+* Comprehensive test coverage
 * Suitable for:
 
   * academic projects
   * numerical optimization coursework
   * research prototypes
+  * learning optimization algorithms
+
+---
+
+## 🧪 Testing
+
+The test suite covers all major functionality:
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run tests with coverage
+pytest tests/ --cov=optimkit
+
+# Run specific test module
+pytest tests/test_function.py -v
+```
 
 ---
 
@@ -184,10 +238,24 @@ optimkit/
 
 Planned improvements:
 
-* Constraint handling techniques
+* Constraint handling techniques (penalty methods, barrier methods)
 * Quasi-Newton methods (BFGS, L-BFGS)
-* Additional metaheuristics
+* Additional metaheuristics (PSO, Differential Evolution)
+* Constrained optimization support
 * Documentation generation (Sphinx)
+* Performance benchmarks
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! To contribute:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/new-method`)
+3. Make your changes and add tests
+4. Run the test suite (`pytest tests/ -v`)
+5. Submit a pull request
 
 ---
 

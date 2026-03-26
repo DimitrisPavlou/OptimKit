@@ -1,7 +1,6 @@
 import numpy as np
 from sympy import Expr, lambdify, Matrix, hessian
 from typing import Callable, Union, Tuple, List
-from scipy.linalg import eigh
 from .helper_utils import armijo_line_search, optimal_line_search
 from optimkit.function.Function import Function
 

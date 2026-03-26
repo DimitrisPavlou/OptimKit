@@ -109,46 +109,52 @@ class Function:
     def grad(self, x: Union[float, NDArray[np.floating]]) -> Union[float, NDArray[np.floating]]:
         """
         Compute the gradient (or derivative) at point x.
-        
+
         Parameters
         ----------
         x : Union[float, NDArray[np.floating]]
             Point at which to evaluate. Scalar for univariate, array for multivariate.
-            
+
         Returns
         -------
         Union[float, NDArray[np.floating]]
             Derivative (scalar) for univariate, gradient array for multivariate.
-            
+
         Raises
         ------
         AttributeError
             If gradient is not available (numeric function type).
         """
-        if self.n_vars == 1: 
+        if self.func_type == "numeric":
+            raise AttributeError("Gradient not available for numeric function type")
+        if self.n_vars == 1:
             return float(self.df_numeric(x))
-        if self.n_vars > 1: 
-            result = self.grad_f_numeric(*x)  
+        if self.n_vars > 1:
+            result = self.grad_f_numeric(*x)
             return np.array(result, dtype=np.float64).flatten()
         
     def hessian(self, x: NDArray[np.floating]) -> NDArray[np.floating]:
         """
         Compute the Hessian matrix at point x.
-        
+
         Parameters
         ----------
         x : NDArray[np.floating]
             Point at which to evaluate (multivariate).
-            
+
         Returns
         -------
         NDArray[np.floating]
             Hessian matrix at x.
-            
+
         Raises
         ------
         AttributeError
             If Hessian is not available (univariate or numeric function type).
         """
-        result = self.hessian_f_numeric(*x)  
+        if self.func_type == "numeric":
+            raise AttributeError("Hessian not available for numeric function type")
+        if self.n_vars == 1:
+            raise AttributeError("Hessian not available for univariate functions")
+        result = self.hessian_f_numeric(*x)
         return np.array(result, dtype=np.float64)

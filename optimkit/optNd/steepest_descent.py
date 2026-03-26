@@ -16,25 +16,25 @@ def steepest_descent(
 ) -> Tuple[np.ndarray, int, np.ndarray, np.ndarray]:
     """
     Steepest descent optimization algorithm for multivariable functions.
-    
+
     Args:
         f: Function object (must be multivariate, n_vars > 1, symbolic type)
         starting_point: Initial point for optimization
         epsilon: Convergence tolerance for gradient norm (default: 1e-6)
-        gamma_selection: Step size selection method - "armijo", "optimal_line_search", 
+        gamma_selection: Step size selection method - "armijo", "optimal_line_search",
                         or "constant" (default: "armijo")
         gamma: Step size for "constant" method or initial step size for "armijo" (default: 1.0)
         alpha: Lower bound for "optimal_line_search" or c1 parameter for "armijo" (default: 1e-4)
         beta: Upper bound for "optimal_line_search" or rho parameter for "armijo" (default: 0.5)
         max_iter: Maximum number of iterations (default: 5000)
-        
+
     Returns:
         Tuple containing:
-        - xk: Array of iterates (shape: [n_iterations, n_variables])
+        - trajectory_array: Array of iterates (shape: [n_iterations, n_variables])
         - n_iter: Number of iterations performed
         - grad_norms: Array of gradient norms at each iteration
         - f_vals: Array of function values at each iteration
-        
+
     Raises:
         ValueError: If invalid gamma_selection method or missing required parameters
     """
