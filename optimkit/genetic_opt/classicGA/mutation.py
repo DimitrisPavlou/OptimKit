@@ -11,10 +11,10 @@ def mutation(
 ) -> None:
     """
     Apply Gaussian mutation to children with adaptive variance decay.
-    
+
     The mutation variance decreases over generations to balance exploration
     and exploitation. This function modifies the children array in-place.
-    
+
     Args:
         children: Children population array of shape (population_size, num_variables)
         population_size: Size of the population
@@ -23,12 +23,21 @@ def mutation(
         generation: Current generation number
         max_generations: Total number of generations
         num_elites: Number of elite individuals to preserve from mutation (default: 0)
+
+    Raises:
+        ValueError: If num_elites >= population_size
     """
+    # Validate inputs
+    if num_elites >= population_size:
+        raise ValueError(
+            f"num_elites ({num_elites}) must be less than population_size ({population_size})"
+        )
+    
     # Adaptive variance decay
     initial_variance = 3.0
     variance_decay = initial_variance * (1.0 - generation / max_generations)
     variance_decay = max(variance_decay, 0.7)  # Minimum variance threshold
-    
+
     # Apply mutation to non-elite individuals
     for i in range(num_elites, population_size):
         for j in range(num_variables):

@@ -75,25 +75,31 @@ def GA(
     
     if not isinstance(init_point, np.ndarray):
         init_point = np.array(init_point)
-    
+
     # Number of variables (dimensions)
     num_variables = len(init_point)
-    
-    # Initialize population centered around init_point
-    population = init_point * np.ones((population_size, num_variables))
-    
+
+    # Initialize population with diversity around init_point
+    # Use small random perturbations to create diverse initial population
+    population = np.zeros((population_size, num_variables))
+    for i in range(population_size):
+        population[i] = init_point + np.random.uniform(-1, 1, num_variables) * 0.1 * np.abs(init_point)
+        # Handle zero init points
+        if np.all(init_point == 0):
+            population[i] = np.random.uniform(-1, 1, num_variables)
+
     # Storage for convergence tracking
     convergence_curve = np.zeros(max_generations)
-    
+
     # Best solution tracking
     best_solution = None
     best_fitness = float('inf')
-    
+
     # Main evolutionary loop
     for generation in range(max_generations):
         # Evaluate fitness of each individual in the population
         fitness = np.array([objective_function(ind) for ind in population])
-        
+
         # Select parents
         if selection_algorithm == "roulette":
             parents = roulette_wheel_selection(
@@ -103,31 +109,28 @@ def GA(
             parents = tournament_selection(
                 population, population_size, fitness, num_elites, k=tournament_size
             )
-        
+
         # Create offspring through crossover
         children = crossover(population_size, parents, p_crossover, num_variables)
-        
+
         # Apply mutation
         mutation(
-            children, population_size, num_variables, 
+            children, population_size, num_variables,
             mutation_rate, generation, max_generations, num_elites
         )
-        
-        # Replace population with offspring
-        population = children
-        
-        # Track best solution in current generation
+
+        # Track best solution BEFORE replacing population with children
         best_index = np.argmin(fitness)
-        current_best_solution = population[best_index]
         current_best_fitness = fitness[best_index]
-        
+        current_best_solution = population[best_index]
+
         # Update global best
         if current_best_fitness < best_fitness:
             best_fitness = current_best_fitness
             best_solution = current_best_solution.copy()
-        
+
         convergence_curve[generation] = best_fitness
-        
+
         # Print progress
         if generation % print_every == 0:
             print(
@@ -135,6 +138,9 @@ def GA(
                 f"Best Fitness: {best_fitness:.6e} | "
                 f"Best Solution: {best_solution}"
             )
+
+        # Replace population with offspring
+        population = children
     
     # Final report
     print(

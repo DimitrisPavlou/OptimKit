@@ -8,27 +8,33 @@ def crossover(
 ) -> np.ndarray:
     """
     Perform single-point crossover on parent pairs.
-    
+
     Args:
         population_size: Size of the population
         parents: Parent population array of shape (population_size, num_variables)
         p_crossover: Probability of crossover occurring
         num_variables: Number of variables (dimensions)
-        
+
     Returns:
         Array of children of shape (population_size, num_variables)
     """
     children = np.zeros((population_size, num_variables))
-    
+
     for i in range(0, population_size, 2):
         child1 = parents[i].copy()
-        child2 = parents[i + 1].copy()
         
-        # Perform crossover with probability p_crossover
-        if np.random.rand() < p_crossover:
-            # Randomly choose crossover point
-            crossover_point = np.random.randint(1, num_variables)
+        # Handle odd population size: last individual has no pair
+        if i + 1 >= population_size:
+            children[i] = child1
+            break
             
+        child2 = parents[i + 1].copy()
+
+        # Perform crossover with probability p_crossover
+        if np.random.rand() < p_crossover and num_variables > 1:
+            # Randomly choose crossover point (must be > 0 and < num_variables)
+            crossover_point = np.random.randint(1, num_variables)
+
             # Perform single-point crossover
             child1 = np.concatenate([
                 parents[i][:crossover_point],
@@ -38,8 +44,8 @@ def crossover(
                 parents[i + 1][:crossover_point],
                 parents[i][crossover_point:]
             ])
-        
+
         children[i] = child1
         children[i + 1] = child2
-    
+
     return children

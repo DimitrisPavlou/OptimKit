@@ -51,6 +51,8 @@ Future versions may extend support to constrained optimization.
 
 ## 🔧 Installation
 
+### Option 1: Install from source (recommended)
+
 Clone the repository:
 
 ```bash
@@ -64,11 +66,32 @@ Install the dependencies:
 pip install -r requirements.txt
 ```
 
+### Option 2: Install with pip (future)
+
+```bash
+pip install optimkit
+```
+
 ### Requirements
 
 * Python ≥ 3.9
-* NumPy
-* SymPy
+* NumPy ≥ 1.20.0
+* SymPy ≥ 1.9.0
+
+### Optional: Development setup
+
+If you want to contribute or run the test suite:
+
+```bash
+# Install development dependencies
+pip install -r requirements-dev.txt
+
+# Run the test suite
+pytest tests/ -v
+
+# Run tests with coverage report
+pytest tests/ --cov=optimkit
+```
 
 ---
 
